@@ -131,6 +131,26 @@ canvas {
     flex-direction: column;
     gap: 5px;
     max-width: 200px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(20px);
+    transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+.ui-controls.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(0);
+}
+
+/* Area sensível ao mouse no canto superior direito */
+.ui-trigger-area {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    z-index: 1999;
 }
 
 .ui-controls button {

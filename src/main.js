@@ -10,6 +10,7 @@ import { addVectors, subtractVectors, normalize, multiplyVector } from './utils/
 import { resetAllBubbleStyles } from './utils/resetBubbles.js';
 import { startBubbleFixInterval, fixBrokenBubbles } from './utils/bubbleFix.js';
 import { debugBubblePositioning } from './utils/bubbleDebugger.js';
+import { initUIController } from './utils/uiController.js';
 
 // Variáveis globais
 let canvas;
@@ -445,6 +446,9 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Inicializa o sistema de bolhas de pensamento PRIMEIRO
     initThoughtBubbleSystem();
+    
+    // Inicializa o controlador de UI
+    initUIController();
     
     // Inicializa o resto da aplicação
     init();
