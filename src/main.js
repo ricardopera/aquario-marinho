@@ -4,6 +4,7 @@ import Jellyfish from './entities/jellyfish.js';
 import Hideout from './entities/hideout.js';
 import Alga from './entities/alga.js';
 import Bubble from './entities/bubble.js';
+import { CommunistFish } from './entities/communistFish.js';
 import { checkCollision, handleCollision, ParticleSystem } from './utils/collision.js';
 import { createThoughtBubble, showFishThought, updateAllBubblePositions, clearAllThoughtBubbles, initThoughtBubbleSystem } from './utils/thoughtBubble.js';
 import { addVectors, subtractVectors, normalize, multiplyVector } from './utils/vector.js';
@@ -11,6 +12,7 @@ import { resetAllBubbleStyles } from './utils/resetBubbles.js';
 import { startBubbleFixInterval, fixBrokenBubbles } from './utils/bubbleFix.js';
 import { debugBubblePositioning } from './utils/bubbleDebugger.js';
 import { initUIController } from './utils/uiController.js';
+import { initAudioController } from './utils/audioController.js';
 
 // Variáveis globais
 let canvas;
@@ -450,6 +452,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializa o controlador de UI
     initUIController();
     
+    // Inicializa o controlador de áudio
+    initAudioController();
+    
     // Inicializa o resto da aplicação
     init();
     
@@ -508,6 +513,31 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, 3000);
+    
+    // Adiciona o peixe comunista após carregar tudo
+    setTimeout(() => {
+        try {
+            if (!window.environment || !window.environment.communistFish) {
+                console.log("Inicializando peixe comunista manualmente...");
+                
+                const communistFish = new CommunistFish(
+                    Math.random() * window.innerWidth,
+                    Math.random() * window.innerHeight,
+                    30
+                );
+                
+                fishes.push(communistFish);
+                
+                window.environment = window.environment || {};
+                window.environment.communistFish = communistFish;
+                
+                communistFish.appear();
+                console.log("Peixe comunista inicializado com sucesso!");
+            }
+        } catch (e) {
+            console.error("Erro ao inicializar peixe comunista:", e);
+        }
+    }, 2000);
 });
 
 // Funções de utilidade para a API p5.js (versão simplificada)

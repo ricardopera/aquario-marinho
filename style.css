@@ -204,3 +204,26 @@ canvas {
     50% { transform: translateY(-5px) rotate(2deg); }
     100% { transform: translateY(0) rotate(0); }
 }
+
+/* Estilo para botões do UI */
+.mute-button, .communist-button {
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    margin: 5px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.mute-button:hover, .communist-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.communist-button {
+    color: #ff0000;
+    font-weight: bold;
+}
