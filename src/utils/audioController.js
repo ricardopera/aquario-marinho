@@ -96,8 +96,7 @@ export function muteAll(mute) {
  * Inicializa o controlador de áudio
  */
 export function initAudioController() {
-    // Carregar os áudios principais
-    loadAudio('soviet_anthem', 'assets/audio/soviet_anthem.mp4', true);
+    // O hino soviético foi removido daqui
     
     // Adicionar um botão para controle de som ao UI
     addMuteButton();

@@ -41,9 +41,8 @@ function initializeEnvironment() {
         fishes.push(new Fish(random(width), random(height), random(10, 30), isPredator));
     }
 
-    // Adicionar o peixe comunista ao ambiente - corrigindo os parâmetros
+    // Adicionar o peixe comunista ao ambiente como qualquer outro peixe
     try {
-        // Criando peixe comunista com coordenadas simples, sem usar Vector
         const communistFish = new CommunistFish(
             Math.random() * window.innerWidth, 
             Math.random() * window.innerHeight,
@@ -51,13 +50,6 @@ function initializeEnvironment() {
         );
         
         fishes.push(communistFish);
-        
-        // Disponibilizar globalmente para poder ser invocado pelo botão
-        window.environment = window.environment || {};
-        window.environment.communistFish = communistFish;
-        
-        // Força a aparição inicial
-        communistFish.appear();
         console.log("Peixe comunista adicionado com sucesso!");
     } catch (e) {
         console.error("Erro ao criar o peixe comunista:", e);

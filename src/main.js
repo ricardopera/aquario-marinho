@@ -117,6 +117,19 @@ function initializeEntities() {
         const size = species.minSize + Math.random() * (species.maxSize - species.minSize);
         fishes.push(new Fish(x, y, size, species.name, species.color, species.predator));
     }
+    
+    // Adiciona o peixe comunista permanentemente
+    try {
+        const communistFish = new CommunistFish(
+            Math.random() * canvas.width,
+            Math.random() * canvas.height,
+            30
+        );
+        fishes.push(communistFish);
+        console.log("Peixe comunista adicionado com sucesso!");
+    } catch (e) {
+        console.error("Erro ao adicionar peixe comunista:", e);
+    }
 
     // Cria algumas bolhas iniciais
     for (let i = 0; i < 10; i++) {
@@ -513,31 +526,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, 3000);
-    
-    // Adiciona o peixe comunista após carregar tudo
-    setTimeout(() => {
-        try {
-            if (!window.environment || !window.environment.communistFish) {
-                console.log("Inicializando peixe comunista manualmente...");
-                
-                const communistFish = new CommunistFish(
-                    Math.random() * window.innerWidth,
-                    Math.random() * window.innerHeight,
-                    30
-                );
-                
-                fishes.push(communistFish);
-                
-                window.environment = window.environment || {};
-                window.environment.communistFish = communistFish;
-                
-                communistFish.appear();
-                console.log("Peixe comunista inicializado com sucesso!");
-            }
-        } catch (e) {
-            console.error("Erro ao inicializar peixe comunista:", e);
-        }
-    }, 2000);
 });
 
 // Funções de utilidade para a API p5.js (versão simplificada)
