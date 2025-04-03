@@ -86,3 +86,5 @@ function createCommunistFish() {
     fishes.push(communistFish);
     console.log("Novo peixe comunista criado!");
 }
+
+export { createCommunistFish };
