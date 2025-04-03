@@ -1,3 +1,4 @@
+// Importação usando caminho relativo completo para evitar referência circular
 import Fish from './fish.js';
 
 export class CommunistFish extends Fish {
@@ -41,5 +42,13 @@ export class CommunistFish extends Fish {
         
         // Usa o método da classe pai com o pensamento comunista
         return super.forceThink(communistThought);
+    }
+    
+    die() {
+        // Antes de morrer, mostrar um pensamento final dramático
+        this.forceThink("O comunismo jamais morrerá, camarada!");
+        
+        // Chama o método original de morte
+        super.die();
     }
 }

@@ -7,7 +7,7 @@ import Flee from '../behaviors/flee.js';
 import Hide from '../behaviors/hide.js';
 import Schooling from '../behaviors/schooling.js';
 import { createThoughtBubble } from '../utils/thoughtBubble.js';
-import { createCommunistFish } from '../environment.js'; // Import the function
+// Removida a importação circular para CommunistFish ou createCommunistFish
 
 class Fish extends Entity {
     constructor(x, y, size, species, color, isPredator = false) {
@@ -182,14 +182,25 @@ class Fish extends Entity {
         if (!entity.alive) return;
         
         if (this.isPredator && entity instanceof Fish) {
+            // Verificar se é um peixe comunista antes de matá-lo
+            const isCommunistFish = entity.constructor.name === 'CommunistFish';
+            
+            // Mata o peixe
             entity.die();
             this.hunger = 0;
             this.energy = Math.min(100, this.energy + 30);
             this.think("Que delícia! Acabei de comer um " + entity.species);
             
-            // Check if the devoured fish is a CommunistFish
-            if (entity instanceof CommunistFish) {
-                createCommunistFish(); // Trigger the creation of a new CommunistFish
+            // Se era um peixe comunista, cria um novo em outro lugar
+            if (isCommunistFish) {
+                console.log("Um Peixe Comunista foi devorado! Outro surgirá para continuar a revolução!");
+                
+                // Aguarda um momento antes de criar um novo (efeito dramático)
+                setTimeout(() => {
+                    // Dispara um evento personalizado para que o sistema principal crie um novo peixe comunista
+                    const event = new CustomEvent('createCommunistFish');
+                    window.dispatchEvent(event);
+                }, 2000);
             }
         } else if (!this.isPredator) {
             // Peixes herbívoros comem algas ou corais

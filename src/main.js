@@ -526,6 +526,32 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }, 3000);
+    
+    // Adiciona listener para o evento de criar um novo peixe comunista quando o atual for devorado
+    window.addEventListener('createCommunistFish', () => {
+        console.log("Criando novo peixe comunista após o anterior ter sido devorado");
+        
+        try {
+            const communistFish = new CommunistFish(
+                Math.random() * canvas.width,
+                Math.random() * canvas.height,
+                30
+            );
+            fishes.push(communistFish);
+            
+            // Adiciona uma animação ou efeito especial na posição onde o novo peixe aparece
+            particles.addParticle(
+                communistFish.position.x, 
+                communistFish.position.y, 
+                '#FF0000', 
+                20
+            );
+            
+            console.log("Novo peixe comunista criado com sucesso!");
+        } catch (e) {
+            console.error("Erro ao criar novo peixe comunista:", e);
+        }
+    });
 });
 
 // Funções de utilidade para a API p5.js (versão simplificada)
