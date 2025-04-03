@@ -76,3 +76,13 @@ function displayEntities() {
         fish.display();
     }
 }
+
+function createCommunistFish() {
+    const communistFish = new CommunistFish(
+        Math.random() * window.innerWidth,
+        Math.random() * window.innerHeight,
+        30 // tamanho fixo
+    );
+    fishes.push(communistFish);
+    console.log("Novo peixe comunista criado!");
+}

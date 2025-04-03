@@ -7,6 +7,7 @@ import Flee from '../behaviors/flee.js';
 import Hide from '../behaviors/hide.js';
 import Schooling from '../behaviors/schooling.js';
 import { createThoughtBubble } from '../utils/thoughtBubble.js';
+import { createCommunistFish } from '../environment.js'; // Import the function
 
 class Fish extends Entity {
     constructor(x, y, size, species, color, isPredator = false) {
@@ -185,6 +186,11 @@ class Fish extends Entity {
             this.hunger = 0;
             this.energy = Math.min(100, this.energy + 30);
             this.think("Que delícia! Acabei de comer um " + entity.species);
+            
+            // Check if the devoured fish is a CommunistFish
+            if (entity instanceof CommunistFish) {
+                createCommunistFish(); // Trigger the creation of a new CommunistFish
+            }
         } else if (!this.isPredator) {
             // Peixes herbívoros comem algas ou corais
             entity.beEaten(this.size * 0.5);
