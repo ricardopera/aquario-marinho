@@ -555,10 +555,18 @@ class ReproductionSystem {
         this.startMatingRitual(fish1, fish2);
         
         setTimeout(() => {
-            if (Math.random() < 0.7) { // 70% chance de sucesso
-                this.createOffspring(fish1, fish2);
+            // Verificar se ambos os peixes ainda existem e estão vivos
+            if (
+                fish1 && fish2 &&
+                fish1.alive !== false &&
+                fish2.alive !== false
+            ) {
+                if (Math.random() < 0.7) { // 70% chance de sucesso
+                    this.createOffspring(fish1, fish2);
+                }
+                this.endMatingRitual(fish1, fish2);
             }
-            this.endMatingRitual(fish1, fish2);
+            // Caso contrário, não faz nada
         }, 3000);
     }
 
