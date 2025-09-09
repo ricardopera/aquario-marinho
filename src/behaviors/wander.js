@@ -83,8 +83,7 @@ class Wander extends Behavior {
 
     showThoughtBubble(thought) {
         // Função para exibir o balão de pensamento
-        // Implementação deve ser feita em thoughtBubble.js
-        createThoughtBubble(this.entity.position, thought);
+        createThoughtBubble(thought, 0, 0, this.entity);
     }
 
     randomThought() {

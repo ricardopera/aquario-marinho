@@ -227,3 +227,56 @@ canvas {
     color: #ff0000;
     font-weight: bold;
 }
+
+/* Estilos para o Performance Monitor - Fase 1 */
+.performance-panel {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    z-index: 10000;
+    min-width: 200px;
+    display: none;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.performance-panel.visible {
+    display: block;
+}
+
+.perf-header {
+    font-weight: bold;
+    margin-bottom: 8px;
+    color: #4CAF50;
+    font-size: 14px;
+}
+
+.toggle-hint {
+    font-size: 10px;
+    opacity: 0.7;
+    font-weight: normal;
+}
+
+.perf-metric {
+    margin: 4px 0;
+    display: flex;
+    justify-content: space-between;
+}
+
+.perf-good {
+    color: #4CAF50;
+}
+
+.perf-warning {
+    color: #ff9800;
+}
+
+.perf-bad {
+    color: #ff6b6b;
+}
