@@ -180,7 +180,7 @@ class CollisionManager {
     update(entities) {
         this.spatialGrid.clear();
         
-        // Populat grid
+        // Populate grid
         for (const entity of entities) {
             this.spatialGrid.addEntity(entity);
         }
