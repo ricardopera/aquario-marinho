@@ -17,6 +17,7 @@ import PerformanceMonitor from './utils/performanceMonitor.js';
 import { CollisionManager } from './utils/spatialGrid.js';
 import FishAppearanceSystem from './graphics/fishRenderer.js';
 import VolumetricLighting from './graphics/lightingSystem.js';
+import AdvancedParticleSystem from './graphics/particleSystem.js';
 
 // Variáveis globais
 let canvas;
@@ -26,6 +27,7 @@ let performanceMonitor;
 let collisionManager;
 let fishRenderer; // New fish appearance system
 let lightingSystem; // Volumetric lighting system
+let advancedParticles; // Advanced particle system
 let corals = [];
 let jellyfishes = [];
 let hideouts = [];
@@ -70,6 +72,9 @@ function init() {
     // Expose particles globally for collision system
     window.particles = particles;
     
+    // Expose advanced particle system globally - FASE 2
+    window.advancedParticles = advancedParticles;
+    
     // Inicializa o monitor de performance - FASE 1
     performanceMonitor = new PerformanceMonitor();
     
@@ -81,6 +86,9 @@ function init() {
     
     // Inicializa o sistema de iluminação volumétrica - FASE 2
     lightingSystem = new VolumetricLighting(canvas);
+    
+    // Inicializa o sistema avançado de partículas - FASE 2
+    advancedParticles = new AdvancedParticleSystem();
     
     initializeEntities();
     setupControls();
@@ -229,6 +237,12 @@ function animate() {
     // Atualiza e renderiza o sistema de partículas
     particles.update();
     particles.display(ctx);
+    
+    // FASE 2: Atualiza e renderiza o sistema avançado de partículas
+    if (advancedParticles) {
+        advancedParticles.update();
+        advancedParticles.render(ctx);
+    }
     
     // FASE 2: Adiciona interações de iluminação com as entidades
     if (lightingSystem) {

@@ -832,8 +832,8 @@ aquario-marinho/
 - [x] Criar FishAppearanceSystem
 - [x] Implementar FishAnimator com ondulação
 - [x] Desenvolver VolumetricLighting
-- [ ] Expandir sistema de partículas
-- [ ] Adicionar variações visuais por espécie
+- [x] Expandir sistema de partículas
+- [x] Adicionar variações visuais por espécie
 
 ### Fase 3 (3-4 semanas):
 - [ ] Implementar ReproductionSystem
