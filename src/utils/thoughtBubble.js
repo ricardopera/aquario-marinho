@@ -9,6 +9,7 @@ class ThoughtBubbleManager {
         this.maxBubbles = 10; // Limite para evitar spam
         this.lastCleanup = 0;
         this.cleanupInterval = 5000; // 5 segundos
+        this.entitiesReference = null; // Reference to the entities array
     }
 
     isValidRequest(entity, text) {
@@ -27,6 +28,15 @@ class ThoughtBubbleManager {
             return null; // SEM LOGGING para casos inválidos
         }
 
+        // Use a consistent entity ID - prefer entity.id, fallback to entity itself
+        const entityId = entity.id || entity;
+
+        // Check if this entity already has an active bubble
+        if (this.activeBubbles.has(entityId)) {
+            // Remove the existing bubble first
+            this.removeBubble(entityId);
+        }
+
         // Verificar limites
         if (this.activeBubbles.size >= this.maxBubbles) {
             this.removeOldestBubble();
@@ -39,7 +49,7 @@ class ThoughtBubbleManager {
         }
         
         this.initializeBubble(bubble, entity, text);
-        this.activeBubbles.set(entity.id || entity, bubble);
+        this.activeBubbles.set(entityId, bubble);
         
         return bubble.element;
     }
@@ -61,8 +71,9 @@ class ThoughtBubbleManager {
     }
 
     initializeBubble(bubble, entity, text) {
+        const entityId = entity.id || entity;
         bubble.element.textContent = text;
-        bubble.entityId = entity.id || entity;
+        bubble.entityId = entityId;
         bubble.createdAt = Date.now();
         
         // Estilos aplicados diretamente
@@ -70,9 +81,9 @@ class ThoughtBubbleManager {
         
         document.body.appendChild(bubble.element);
         
-        // Auto-remove após 3 segundos
+        // Auto-remove após 3 segundos using consistent entityId
         setTimeout(() => {
-            this.removeBubble(entity.id || entity);
+            this.removeBubble(entityId);
         }, 3000);
     }
 
@@ -148,10 +159,17 @@ class ThoughtBubbleManager {
         }
     }
 
+    setEntitiesReference(entities) {
+        this.entitiesReference = entities;
+    }
+
     findEntityById(entityId) {
-        // Aqui você precisaria implementar uma forma de encontrar entidades por ID
-        // Por enquanto, retornamos null para entidades não encontradas
-        return null;
+        if (!this.entitiesReference) return null;
+        
+        // Search through the entities array to find the entity with matching ID
+        return this.entitiesReference.find(entity => 
+            entity && (entity.id === entityId || entity === entityId)
+        );
     }
 
     removeBubble(entityId) {
@@ -247,11 +265,17 @@ function initThoughtBubbleSystem() {
     // Sistema inicializado - sem bolha de teste para evitar poluição visual
 }
 
+// Função para definir a referência das entidades
+function setEntitiesReference(entities) {
+    bubbleManager.setEntitiesReference(entities);
+}
+
 // Exportar as funções
 export {
     createThoughtBubble,
     showFishThought,
     updateAllBubblePositions,
     clearAllThoughtBubbles,
-    initThoughtBubbleSystem
+    initThoughtBubbleSystem,
+    setEntitiesReference
 };

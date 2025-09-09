@@ -154,8 +154,8 @@ class Fish extends Entity {
     }
     
     checkBehaviorThoughts() {
-        // Chance pequena de gerar um pensamento baseado no comportamento atual
-        if (Math.random() < 0.0002) { // 0.02% de chance por frame
+        // Chance pequena de gerar um pensamento baseado no comportamento atual - REDUCED
+        if (Math.random() < 0.00005) { // Very small chance per frame (reduced from 0.0002)
             let thoughtType = null;
             
             // Determina o tipo de pensamento com base no estado atual
