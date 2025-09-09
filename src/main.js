@@ -16,6 +16,7 @@ import { initAudioController } from './utils/audioController.js';
 import PerformanceMonitor from './utils/performanceMonitor.js';
 import { CollisionManager } from './utils/spatialGrid.js';
 import FishAppearanceSystem from './graphics/fishRenderer.js';
+import VolumetricLighting from './graphics/lightingSystem.js';
 
 // Variáveis globais
 let canvas;
@@ -24,6 +25,7 @@ let fishes = [];
 let performanceMonitor;
 let collisionManager;
 let fishRenderer; // New fish appearance system
+let lightingSystem; // Volumetric lighting system
 let corals = [];
 let jellyfishes = [];
 let hideouts = [];
@@ -76,6 +78,9 @@ function init() {
     
     // Inicializa o sistema de renderização de peixes - FASE 2
     fishRenderer = new FishAppearanceSystem();
+    
+    // Inicializa o sistema de iluminação volumétrica - FASE 2
+    lightingSystem = new VolumetricLighting(canvas);
     
     initializeEntities();
     setupControls();
@@ -208,6 +213,11 @@ function animate() {
     // Desenha o fundo do aquário
     drawBackground();
     
+    // FASE 2: Adiciona efeitos de iluminação volumétrica
+    if (lightingSystem) {
+        lightingSystem.renderVolumetricLighting(ctx, Date.now());
+    }
+    
     // Atualiza e renderiza todas as entidades
     updateEntities();
     
@@ -219,6 +229,11 @@ function animate() {
     // Atualiza e renderiza o sistema de partículas
     particles.update();
     particles.display(ctx);
+    
+    // FASE 2: Adiciona interações de iluminação com as entidades
+    if (lightingSystem) {
+        lightingSystem.addEntityInteraction(ctx, [...fishes, ...corals, ...jellyfishes], Date.now());
+    }
     
     // CRUCIAL: Update the entities reference for the thought bubble manager
     setEntitiesReference(fishes);
@@ -426,6 +441,11 @@ function updateEntities() {
 function handleResize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Atualiza o sistema de iluminação para o novo tamanho
+    if (lightingSystem) {
+        lightingSystem.onResize(canvas.width, canvas.height);
+    }
     
     // Limpa bolhas de pensamento ao redimensionar
     clearAllThoughtBubbles();

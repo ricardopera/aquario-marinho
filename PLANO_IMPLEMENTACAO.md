@@ -829,9 +829,9 @@ aquario-marinho/
 - [ ] Testar performance em diferentes navegadores
 
 ### Fase 2 (2-3 semanas):
-- [ ] Criar FishAppearanceSystem
-- [ ] Implementar FishAnimator com ondulação
-- [ ] Desenvolver VolumetricLighting
+- [x] Criar FishAppearanceSystem
+- [x] Implementar FishAnimator com ondulação
+- [x] Desenvolver VolumetricLighting
 - [ ] Expandir sistema de partículas
 - [ ] Adicionar variações visuais por espécie
 
