@@ -6,7 +6,7 @@ import Alga from './entities/alga.js';
 import Bubble from './entities/bubble.js';
 import { CommunistFish } from './entities/communistFish.js';
 import { checkCollision, handleCollision, ParticleSystem } from './utils/collision.js';
-import { createThoughtBubble, showFishThought, updateAllBubblePositions, clearAllThoughtBubbles, initThoughtBubbleSystem } from './utils/thoughtBubble.js';
+import { createThoughtBubble, showFishThought, updateAllBubblePositions, clearAllThoughtBubbles, initThoughtBubbleSystem, setEntitiesReference } from './utils/thoughtBubble.js';
 import { addVectors, subtractVectors, normalize, multiplyVector } from './utils/vector.js';
 import { resetAllBubbleStyles } from './utils/resetBubbles.js';
 import { startBubbleFixInterval, fixBrokenBubbles } from './utils/bubbleFix.js';
@@ -215,6 +215,9 @@ function animate() {
     particles.update();
     particles.display(ctx);
     
+    // CRUCIAL: Update the entities reference for the thought bubble manager
+    setEntitiesReference(fishes);
+    
     // Atualiza a posição das bolhas de pensamento - OTIMIZADO
     updateAllBubblePositions();
     
@@ -386,8 +389,8 @@ function updateEntities() {
         fish.update(fishes, corals, jellyfishes, hideouts, algae);
         fish.display();
         
-        // Adiciona chance de pensamento espontâneo
-        if (Math.random() < 0.0005) { // Pequena chance a cada frame
+        // Adiciona chance de pensamento espontâneo - REDUCED
+        if (Math.random() < 0.00005) { // Very small chance per frame (reduced from 0.0005)
             const thoughts = fish.isPredator ? 
                 ["Hmm, quem será minha próxima refeição?", "Sou o rei deste aquário!", "Estou de olho em presas distraídas..."] :
                 ["Que água agradável hoje!", "Estou apenas nadando por aí!", "Adoro este aquário colorido!"];
@@ -478,61 +481,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializa o resto da aplicação
     init();
     
-    // Adiciona teste automático de bolhas após 2 segundos
-    setTimeout(() => {
-        console.log("Executando teste automático de bolhas");
-        
-        if (fishes.length > 0) {
-            // Faz o primeiro peixe pensar algo
-            const testFish = fishes[0];
-            testFish.forceThink("TESTE! Você consegue me ver?");
-            
-            // Depois de 1 segundo, testa mais um peixe
-            setTimeout(() => {
-                if (fishes.length > 1) {
-                    const secondFish = fishes[1];
-                    secondFish.forceThink("Eu também estou testando as bolhas!");
-                }
-            }, 1000);
-        } else {
-            console.log("Não há peixes para testar bolhas");
-        }
-    }, 2000);
-    
-    // Força um teste periódico a cada 10 segundos
-    setInterval(() => {
-        if (fishes.length > 0) {
-            // Escolhe um peixe aleatório para pensar
-            const randomFish = fishes[Math.floor(Math.random() * fishes.length)];
-            randomFish.forceThink("Teste periódico das bolhas...");
-        }
-    }, 10000);
-    
     // Força a limpeza de bolhas existentes
     clearAllThoughtBubbles();
-    
-    // Adiciona um teste automático de bolhas de pensamento
-    setTimeout(() => {
-        console.log("Executando teste automático de bolhas");
-        if (fishes.length > 0) {
-            const testFish = fishes[0];
-            const testBubble = testFish.forceThink("TESTE! Você consegue ver esta bolha?");
-            console.log("Bolha de teste criada:", testBubble);
-        } else {
-            console.log("Não há peixes para testar a bolha");
-        }
-    }, 2000);
-    
-    // Adiciona verificações periódicas para remover bolhas problemáticas
-    setInterval(() => {
-        document.querySelectorAll('.thought-bubble, .basic-thought-bubble').forEach(bubble => {
-            const rect = bubble.getBoundingClientRect();
-            if (rect.left < 20 && rect.top > window.innerHeight - 50) {
-                console.log("Removendo bolha problemática");
-                bubble.remove();
-            }
-        });
-    }, 3000);
     
     // Adiciona listener para o evento de criar um novo peixe comunista quando o atual for devorado
     window.addEventListener('createCommunistFish', () => {
