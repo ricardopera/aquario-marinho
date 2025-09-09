@@ -41,8 +41,12 @@ class Entity {
     }
 
     checkBoundaries() {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
+        // Get canvas dimensions from the global context
+        const canvas = document.querySelector('canvas');
+        if (!canvas) return;
+        
+        const width = canvas.width;
+        const height = canvas.height;
         
         if (this.position.x < 0) this.position.x = width;
         if (this.position.x > width) this.position.x = 0;
