@@ -129,7 +129,7 @@ class FishAppearanceSystem {
         ctx.save();
         
         // Apply fish transformations
-        ctx.translate(fish.x, fish.y);
+        ctx.translate(fish.position.x, fish.position.y);
         ctx.rotate(fish.direction);
         
         // Apply banking/tilting if fish is turning
@@ -476,7 +476,7 @@ class FishAppearanceSystem {
         
         // Predator eyes track prey
         if (fish.isPredator && fish.targetPrey) {
-            const preyDirection = Math.atan2(fish.targetPrey.y - fish.y, fish.targetPrey.x - fish.x);
+            const preyDirection = Math.atan2(fish.targetPrey.position.y - fish.position.y, fish.targetPrey.position.x - fish.position.x);
             const fishDirection = fish.direction;
             const relativeAngle = preyDirection - fishDirection;
             
