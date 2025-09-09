@@ -15,6 +15,7 @@ import { initUIController } from './utils/uiController.js';
 import { initAudioController } from './utils/audioController.js';
 import PerformanceMonitor from './utils/performanceMonitor.js';
 import { CollisionManager } from './utils/spatialGrid.js';
+import FishAppearanceSystem from './graphics/fishRenderer.js';
 
 // Variáveis globais
 let canvas;
@@ -22,6 +23,7 @@ let ctx;
 let fishes = [];
 let performanceMonitor;
 let collisionManager;
+let fishRenderer; // New fish appearance system
 let corals = [];
 let jellyfishes = [];
 let hideouts = [];
@@ -71,6 +73,9 @@ function init() {
     
     // Inicializa o sistema de colisões otimizado - FASE 1
     collisionManager = new CollisionManager(canvas.width, canvas.height);
+    
+    // Inicializa o sistema de renderização de peixes - FASE 2
+    fishRenderer = new FishAppearanceSystem();
     
     initializeEntities();
     setupControls();
@@ -387,7 +392,14 @@ function updateEntities() {
     for (const fish of fishes) {
         // Atualiza o peixe passando todas as entidades necessárias
         fish.update(fishes, corals, jellyfishes, hideouts, algae);
-        fish.display();
+        
+        // FASE 2: Usa o novo sistema de renderização de peixes
+        if (fishRenderer) {
+            fishRenderer.renderFish(ctx, fish);
+        } else {
+            // Fallback para o método original se o renderer ainda não foi inicializado
+            fish.display();
+        }
         
         // Adiciona chance de pensamento espontâneo - REDUCED
         if (Math.random() < 0.00005) { // Very small chance per frame (reduced from 0.0005)
