@@ -15,6 +15,9 @@ import { initUIController } from './utils/uiController.js';
 import { initAudioController } from './utils/audioController.js';
 import PerformanceMonitor from './utils/performanceMonitor.js';
 import { CollisionManager } from './utils/spatialGrid.js';
+import FishAppearanceSystem from './graphics/fishRenderer.js';
+import VolumetricLighting from './graphics/lightingSystem.js';
+import AdvancedParticleSystem from './graphics/particleSystem.js';
 
 // Variáveis globais
 let canvas;
@@ -22,6 +25,9 @@ let ctx;
 let fishes = [];
 let performanceMonitor;
 let collisionManager;
+let fishRenderer; // New fish appearance system
+let lightingSystem; // Volumetric lighting system
+let advancedParticles; // Advanced particle system
 let corals = [];
 let jellyfishes = [];
 let hideouts = [];
@@ -66,11 +72,23 @@ function init() {
     // Expose particles globally for collision system
     window.particles = particles;
     
+    // Expose advanced particle system globally - FASE 2
+    window.advancedParticles = advancedParticles;
+    
     // Inicializa o monitor de performance - FASE 1
     performanceMonitor = new PerformanceMonitor();
     
     // Inicializa o sistema de colisões otimizado - FASE 1
     collisionManager = new CollisionManager(canvas.width, canvas.height);
+    
+    // Inicializa o sistema de renderização de peixes - FASE 2
+    fishRenderer = new FishAppearanceSystem();
+    
+    // Inicializa o sistema de iluminação volumétrica - FASE 2
+    lightingSystem = new VolumetricLighting(canvas);
+    
+    // Inicializa o sistema avançado de partículas - FASE 2
+    advancedParticles = new AdvancedParticleSystem();
     
     initializeEntities();
     setupControls();
@@ -203,6 +221,11 @@ function animate() {
     // Desenha o fundo do aquário
     drawBackground();
     
+    // FASE 2: Adiciona efeitos de iluminação volumétrica
+    if (lightingSystem) {
+        lightingSystem.renderVolumetricLighting(ctx, Date.now());
+    }
+    
     // Atualiza e renderiza todas as entidades
     updateEntities();
     
@@ -214,6 +237,17 @@ function animate() {
     // Atualiza e renderiza o sistema de partículas
     particles.update();
     particles.display(ctx);
+    
+    // FASE 2: Atualiza e renderiza o sistema avançado de partículas
+    if (advancedParticles) {
+        advancedParticles.update();
+        advancedParticles.render(ctx);
+    }
+    
+    // FASE 2: Adiciona interações de iluminação com as entidades
+    if (lightingSystem) {
+        lightingSystem.addEntityInteraction(ctx, [...fishes, ...corals, ...jellyfishes], Date.now());
+    }
     
     // CRUCIAL: Update the entities reference for the thought bubble manager
     setEntitiesReference(fishes);
@@ -387,7 +421,14 @@ function updateEntities() {
     for (const fish of fishes) {
         // Atualiza o peixe passando todas as entidades necessárias
         fish.update(fishes, corals, jellyfishes, hideouts, algae);
-        fish.display();
+        
+        // FASE 2: Usa o novo sistema de renderização de peixes
+        if (fishRenderer) {
+            fishRenderer.renderFish(ctx, fish);
+        } else {
+            // Fallback para o método original se o renderer ainda não foi inicializado
+            fish.display();
+        }
         
         // Adiciona chance de pensamento espontâneo - REDUCED
         if (Math.random() < 0.00005) { // Very small chance per frame (reduced from 0.0005)
@@ -414,6 +455,11 @@ function updateEntities() {
 function handleResize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    
+    // Atualiza o sistema de iluminação para o novo tamanho
+    if (lightingSystem) {
+        lightingSystem.onResize(canvas.width, canvas.height);
+    }
     
     // Limpa bolhas de pensamento ao redimensionar
     clearAllThoughtBubbles();

@@ -151,6 +151,31 @@ class Fish extends Entity {
         
         // Atualiza a posição com física
         super.update();
+        
+        // FASE 2: Criar rastro de bolhas quando nadando rapidamente
+        if (window.advancedParticles && this.velocity) {
+            const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
+            if (speed > this.maxSpeed * 0.6) {
+                // Intensity based on speed
+                const intensity = speed / this.maxSpeed;
+                window.advancedParticles.createBubbleTrail(
+                    { x: this.position.x, y: this.position.y },
+                    this.velocity,
+                    intensity * 0.3
+                );
+            }
+        }
+        
+        // FASE 2: Criar sedimento quando nadando perto do fundo
+        if (window.advancedParticles && this.position.y > window.innerHeight - 100) {
+            if (Math.random() < 0.05) { // 5% chance per frame when near bottom
+                const disturbance = Math.sqrt(this.velocity?.x * this.velocity?.x + this.velocity?.y * this.velocity?.y) / this.maxSpeed;
+                window.advancedParticles.createSedimentCloud(
+                    { x: this.position.x, y: this.position.y + this.size },
+                    disturbance
+                );
+            }
+        }
     }
     
     checkBehaviorThoughts() {
@@ -185,6 +210,21 @@ class Fish extends Entity {
             // Verificar se é um peixe comunista antes de matá-lo
             const isCommunistFish = entity.constructor.name === 'CommunistFish';
             
+            // FASE 2: Criar efeito de partículas de ataque
+            if (window.advancedParticles) {
+                window.advancedParticles.createAttackEffect(
+                    { x: entity.position.x, y: entity.position.y }, 
+                    1.5
+                );
+                
+                // Criar efeito de escamas voando
+                window.advancedParticles.createScaleEffect(
+                    { x: entity.position.x, y: entity.position.y },
+                    entity.color,
+                    8
+                );
+            }
+            
             // Mata o peixe
             entity.die();
             this.hunger = 0;
@@ -203,6 +243,14 @@ class Fish extends Entity {
                 }, 2000);
             }
         } else if (!this.isPredator) {
+            // FASE 2: Criar efeito de partículas de alimentação
+            if (window.advancedParticles) {
+                window.advancedParticles.createFeedingEffect(
+                    { x: this.position.x, y: this.position.y },
+                    0.8
+                );
+            }
+            
             // Peixes herbívoros comem algas ou corais
             entity.beEaten(this.size * 0.5);
             this.hunger = Math.max(0, this.hunger - 30);
