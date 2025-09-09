@@ -1,4 +1,5 @@
 // src/graphics/fishRenderer.js - Fish Appearance System
+import FishAnimator from './fishAnimator.js';
 
 class SeededRandom {
     constructor(seed) {
@@ -37,6 +38,9 @@ class FishAppearanceSystem {
         
         // Cache for generated appearances
         this.appearanceCache = new Map();
+        
+        // Initialize the fish animator
+        this.animator = new FishAnimator();
     }
 
     generateFishAppearance(species, seed) {
@@ -119,21 +123,32 @@ class FishAppearanceSystem {
             fish.appearance = this.generateFishAppearance(fish.species, seed);
         }
 
+        // Update fish animations before rendering
+        this.animator.updateFishAnimations(fish, 16); // Assuming 60 FPS (16ms per frame)
+
         ctx.save();
         
         // Apply fish transformations
         ctx.translate(fish.x, fish.y);
         ctx.rotate(fish.direction);
-        ctx.scale(fish.appearance.size / 20, 1); // Scale based on appearance size vs base size
         
-        // Draw body with pattern
+        // Apply banking/tilting if fish is turning
+        if (fish.bankAngle) {
+            ctx.rotate(fish.bankAngle * 0.3); // Subtle banking effect
+        }
+        
+        // Apply breathing scale
+        const breathingScale = fish.breathingScale || 1;
+        ctx.scale((fish.appearance.size / 20) * breathingScale, breathingScale);
+        
+        // Draw body with pattern and undulation
         this.drawBodyWithPattern(ctx, fish);
         
-        // Draw animated fins
-        this.drawAnimatedFins(ctx, fish);
+        // Draw enhanced animated fins
+        this.drawEnhancedAnimatedFins(ctx, fish);
         
-        // Draw expressive eyes
-        this.drawExpressiveEyes(ctx, fish);
+        // Draw expressive eyes with animation
+        this.drawAnimatedExpressiveEyes(ctx, fish);
         
         // Draw state effects (hunger, fear, etc.)
         this.drawStateEffects(ctx, fish);
@@ -267,6 +282,121 @@ class FishAppearanceSystem {
         ctx.fill();
     }
 
+    drawEnhancedAnimatedFins(ctx, fish) {
+        const tailMovement = this.animator.calculateTailMovement(fish, Date.now() * 0.001);
+        
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        
+        // Enhanced tail fin with multi-segment movement
+        this.drawEnhancedTailFin(ctx, fish, tailMovement);
+        
+        // Pectoral fins with rowing motion
+        this.drawPectoralFins(ctx, fish);
+        
+        // Dorsal fin with stabilizing movement
+        this.drawDorsalFin(ctx, fish);
+        
+        // Anal fin for stability
+        this.drawAnalFin(ctx, fish);
+    }
+
+    drawEnhancedTailFin(ctx, fish, tailMovement) {
+        const motionDamping = (fish.fatigueMotionDamping || 1) * (fish.hideMotionDamping || 1);
+        const baseOffset = tailMovement.base * motionDamping;
+        const midOffset = tailMovement.mid * motionDamping;
+        const tipOffset = tailMovement.tip * motionDamping;
+        
+        // Multi-segment tail for more realistic movement
+        ctx.save();
+        
+        // Base of tail
+        ctx.translate(-fish.size * 0.7, baseOffset);
+        ctx.rotate(baseOffset * 0.3);
+        
+        // Main tail fin
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-fish.size * 0.3, -fish.size * 0.25);
+        ctx.lineTo(-fish.size * 0.4, midOffset - fish.size * 0.15);
+        ctx.lineTo(-fish.size * 0.35, tipOffset);
+        ctx.lineTo(-fish.size * 0.35, -tipOffset);
+        ctx.lineTo(-fish.size * 0.4, -(midOffset - fish.size * 0.15));
+        ctx.lineTo(-fish.size * 0.3, fish.size * 0.25);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Add tail fin details
+        ctx.strokeStyle = this.darkenColor(fish.appearance.secondaryColor, 0.3);
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        ctx.restore();
+    }
+
+    drawPectoralFins(ctx, fish) {
+        const finAngle = fish.pectoralFinAngle || 0;
+        const motionDamping = (fish.fatigueMotionDamping || 1) * (fish.hideMotionDamping || 1);
+        
+        ctx.save();
+        
+        // Upper pectoral fin
+        ctx.translate(-fish.size * 0.1, -fish.size * 0.3);
+        ctx.rotate(finAngle * motionDamping);
+        
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.15, fish.size * 0.08, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.restore();
+        
+        // Lower pectoral fin
+        ctx.save();
+        ctx.translate(-fish.size * 0.1, fish.size * 0.3);
+        ctx.rotate(-finAngle * motionDamping);
+        
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.15, fish.size * 0.08, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        ctx.restore();
+    }
+
+    drawDorsalFin(ctx, fish) {
+        const dorsalOffset = (fish.dorsalFinOffset || 0) * (fish.fatigueMotionDamping || 1);
+        
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        
+        // Dorsal fin with subtle movement
+        ctx.save();
+        ctx.translate(0, -fish.size * 0.6 + dorsalOffset);
+        
+        ctx.beginPath();
+        ctx.moveTo(-fish.size * 0.2, 0);
+        ctx.lineTo(0, -fish.size * 0.2);
+        ctx.lineTo(fish.size * 0.2, 0);
+        ctx.lineTo(fish.size * 0.1, fish.size * 0.05);
+        ctx.lineTo(-fish.size * 0.1, fish.size * 0.05);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+    }
+
+    drawAnalFin(ctx, fish) {
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        
+        // Anal fin for bottom stability
+        ctx.beginPath();
+        ctx.moveTo(-fish.size * 0.4, fish.size * 0.5);
+        ctx.lineTo(-fish.size * 0.2, fish.size * 0.7);
+        ctx.lineTo(fish.size * 0.1, fish.size * 0.6);
+        ctx.lineTo(0, fish.size * 0.5);
+        ctx.closePath();
+        ctx.fill();
+    }
+
     drawExpressiveEyes(ctx, fish) {
         const eyeSize = fish.size * 0.15;
         const pupilSize = eyeSize * 0.6;
@@ -301,6 +431,83 @@ class FishAppearanceSystem {
         ctx.beginPath();
         ctx.arc(eyeX + pupilOffsetX + eyeSize * 0.3, eyeY + pupilOffsetY - eyeSize * 0.3, eyeSize * 0.2, 0, 2 * Math.PI);
         ctx.fill();
+    }
+
+    drawAnimatedExpressiveEyes(ctx, fish) {
+        const eyeSize = fish.size * 0.15;
+        const pupilSize = eyeSize * 0.6;
+        
+        // Eye positions
+        const eyeY = -fish.size * 0.1;
+        const eyeX = fish.size * 0.3;
+        
+        // Get animated eye look direction
+        const lookX = fish.eyeLookX || 0;
+        const lookY = fish.eyeLookY || 0;
+        const blinkAmount = fish.eyeBlinkAmount || 0;
+        
+        // Draw eye background (sclera)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.save();
+        
+        // Apply blinking by scaling vertically
+        if (blinkAmount > 0) {
+            ctx.translate(eyeX, eyeY);
+            ctx.scale(1, 1 - blinkAmount * 0.9);
+            ctx.translate(-eyeX, -eyeY);
+        }
+        
+        ctx.beginPath();
+        ctx.arc(eyeX, eyeY, eyeSize, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Draw pupil with animated looking
+        ctx.fillStyle = '#000000';
+        let pupilOffsetX = lookX * eyeSize * 0.4;
+        let pupilOffsetY = lookY * eyeSize * 0.4;
+        
+        // State-based eye movement
+        if (fish.hiding || fish.energy < 30) {
+            // Nervous/tired eyes dart around more
+            const nervousTime = Date.now() * 0.008;
+            pupilOffsetX += Math.sin(nervousTime) * eyeSize * 0.2;
+            pupilOffsetY += Math.cos(nervousTime * 1.3) * eyeSize * 0.15;
+        }
+        
+        // Predator eyes track prey
+        if (fish.isPredator && fish.targetPrey) {
+            const preyDirection = Math.atan2(fish.targetPrey.y - fish.y, fish.targetPrey.x - fish.x);
+            const fishDirection = fish.direction;
+            const relativeAngle = preyDirection - fishDirection;
+            
+            pupilOffsetX = Math.cos(relativeAngle) * eyeSize * 0.3;
+            pupilOffsetY = Math.sin(relativeAngle) * eyeSize * 0.3;
+        }
+        
+        ctx.beginPath();
+        ctx.arc(eyeX + pupilOffsetX, eyeY + pupilOffsetY, pupilSize, 0, 2 * Math.PI);
+        ctx.fill();
+        
+        // Eye shine - moves with pupil
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(
+            eyeX + pupilOffsetX + eyeSize * 0.2, 
+            eyeY + pupilOffsetY - eyeSize * 0.2, 
+            eyeSize * 0.15, 
+            0, 2 * Math.PI
+        );
+        ctx.fill();
+        
+        // Iris detail for more realistic look
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.globalAlpha = 0.3;
+        ctx.beginPath();
+        ctx.arc(eyeX + pupilOffsetX, eyeY + pupilOffsetY, pupilSize * 1.2, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        
+        ctx.restore();
     }
 
     drawStateEffects(ctx, fish) {
