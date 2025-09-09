@@ -37,8 +37,8 @@ class Behavior {
         
         createThoughtBubble(
             message,
-            this.entity.position.x,
-            this.entity.position.y - this.entity.size - 10
+            0, 0,
+            this.entity
         );
     }
 }

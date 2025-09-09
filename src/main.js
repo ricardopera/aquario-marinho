@@ -13,11 +13,15 @@ import { startBubbleFixInterval, fixBrokenBubbles } from './utils/bubbleFix.js';
 import { debugBubblePositioning } from './utils/bubbleDebugger.js';
 import { initUIController } from './utils/uiController.js';
 import { initAudioController } from './utils/audioController.js';
+import PerformanceMonitor from './utils/performanceMonitor.js';
+import { CollisionManager } from './utils/spatialGrid.js';
 
 // Variáveis globais
 let canvas;
 let ctx;
 let fishes = [];
+let performanceMonitor;
+let collisionManager;
 let corals = [];
 let jellyfishes = [];
 let hideouts = [];
@@ -58,6 +62,15 @@ function init() {
     
     // Inicializa o sistema de partículas
     particles = new ParticleSystem();
+    
+    // Expose particles globally for collision system
+    window.particles = particles;
+    
+    // Inicializa o monitor de performance - FASE 1
+    performanceMonitor = new PerformanceMonitor();
+    
+    // Inicializa o sistema de colisões otimizado - FASE 1
+    collisionManager = new CollisionManager(canvas.width, canvas.height);
     
     initializeEntities();
     setupControls();
@@ -178,6 +191,12 @@ function setupControls() {
 function animate() {
     if (!isRunning) return;
     
+    // Atualiza o monitor de performance - FASE 1
+    if (performanceMonitor) {
+        performanceMonitor.update();
+        performanceMonitor.setEntityCount(fishes.length + corals.length + jellyfishes.length + hideouts.length + algae.length + bubbles.length);
+    }
+    
     // Limpa o canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -196,7 +215,7 @@ function animate() {
     particles.update();
     particles.display(ctx);
     
-    // Atualiza a posição das bolhas de pensamento (CERTIFICA-SE QUE É CHAMADO A CADA FRAME)
+    // Atualiza a posição das bolhas de pensamento - OTIMIZADO
     updateAllBubblePositions();
     
     // Continua o loop de animação
@@ -348,15 +367,6 @@ function updateEntities() {
     for (const bubble of bubbles) {
         bubble.update();
         bubble.display();
-        
-        // Verifica colisões de bolhas com peixes
-        for (const fish of fishes) {
-            if (checkCollision(bubble, fish)) {
-                bubble.pop();
-                particles.addParticle(bubble.position.x, bubble.position.y, 'rgba(255, 255, 255, 0.7)', 8);
-                break;
-            }
-        }
     }
     
     // Atualiza águas-vivas
@@ -385,18 +395,15 @@ function updateEntities() {
             const thought = thoughts[Math.floor(Math.random() * thoughts.length)];
             fish.think(thought);
         }
+    }
+    
+    // SISTEMA DE COLISÕES OTIMIZADO - Fase 1
+    if (collisionManager) {
+        // Coletar todas as entidades para detecção de colisão
+        const allEntities = [...fishes, ...bubbles];
         
-        // Verifica colisões com outros peixes (para predadores)
-        if (fish.isPredator) {
-            for (const otherFish of fishes) {
-                if (otherFish !== fish && !otherFish.isPredator && checkCollision(fish, otherFish)) {
-                    if (fish.eat) {
-                        fish.eat(otherFish);
-                        particles.addParticle(otherFish.position.x, otherFish.position.y, otherFish.color, 15);
-                    }
-                }
-            }
-        }
+        // Usar o sistema espacial otimizado para colisões
+        collisionManager.update(allEntities);
     }
 }
 
