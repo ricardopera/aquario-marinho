@@ -41,7 +41,9 @@ class Fish extends Entity {
         this.currentHideout = null;
         
         // Preferred depth based on species (will influence wandering)
-        this.preferredDepth = this.depthPreference * (canvas?.height || 600);
+        // Use window dimensions if available, otherwise default
+        const canvasHeight = (typeof window !== 'undefined' && window.innerHeight) ? window.innerHeight : 600;
+        this.preferredDepth = this.depthPreference * canvasHeight;
         
         // Variáveis para animação - ajustadas por espécie
         this.tailAmplitude = 0.3;
