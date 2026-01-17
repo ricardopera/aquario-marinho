@@ -33,7 +33,15 @@ class FishAppearanceSystem {
         this.bodyShapes = {
             'torpedo': this.drawTorpedoBody.bind(this),
             'disc': this.drawDiscBody.bind(this),
-            'elongated': this.drawElongatedBody.bind(this)
+            'elongated': this.drawElongatedBody.bind(this),
+            'clownfish': this.drawClownfishBody.bind(this),
+            'tang': this.drawTangBody.bind(this),
+            'butterflyfish': this.drawButterflyfishBody.bind(this),
+            'angelfish': this.drawAngelfishBody.bind(this),
+            'barracuda': this.drawBarracudaBody.bind(this),
+            'shark': this.drawSharkBody.bind(this),
+            'lionfish': this.drawLionfishBody.bind(this),
+            'communist': this.drawCommunistFishBody.bind(this)
         };
         
         // Cache for generated appearances
@@ -73,29 +81,78 @@ class FishAppearanceSystem {
 
     getSpeciesTraits(species) {
         const traits = {
+            'Peixe-palhaço': {
+                bodyShapes: ['clownfish'],
+                patterns: ['stripes'],
+                baseColor: '#FF7F00',
+                baseSize: 20,
+                finStyles: ['rounded'],
+                eyeStyles: ['large']
+            },
+            'Cirurgião-azul': {
+                bodyShapes: ['tang'],
+                patterns: ['solid', 'gradient'],
+                baseColor: '#1E90FF',
+                baseSize: 25,
+                finStyles: ['normal'],
+                eyeStyles: ['round']
+            },
+            'Peixe-borboleta': {
+                bodyShapes: ['butterflyfish'],
+                patterns: ['stripes', 'spots'],
+                baseColor: '#FFD700',
+                baseSize: 20,
+                finStyles: ['delicate'],
+                eyeStyles: ['round']
+            },
+            'Peixe-anjo': {
+                bodyShapes: ['angelfish'],
+                patterns: ['gradient', 'stripes'],
+                baseColor: '#9370DB',
+                baseSize: 30,
+                finStyles: ['flowing'],
+                eyeStyles: ['round']
+            },
+            'Barracuda': {
+                bodyShapes: ['barracuda'],
+                patterns: ['solid', 'spots'],
+                baseColor: '#708090',
+                baseSize: 40,
+                finStyles: ['sharp'],
+                eyeStyles: ['predator']
+            },
+            'Tubarão-recife': {
+                bodyShapes: ['shark'],
+                patterns: ['solid'],
+                baseColor: '#A9A9A9',
+                baseSize: 50,
+                finStyles: ['shark'],
+                eyeStyles: ['predator']
+            },
+            'Peixe-leão': {
+                bodyShapes: ['lionfish'],
+                patterns: ['stripes'],
+                baseColor: '#B22222',
+                baseSize: 35,
+                finStyles: ['elaborate'],
+                eyeStyles: ['predator']
+            },
+            'Peixe Comunista': {
+                bodyShapes: ['communist'],
+                patterns: ['solid'],
+                baseColor: '#DC143C',
+                baseSize: 30,
+                finStyles: ['revolutionary'],
+                eyeStyles: ['determined']
+            },
+            // Fallback for unknown species
             'common': {
-                bodyShapes: ['torpedo', 'elongated'],
-                patterns: ['stripes', 'solid', 'gradient'],
+                bodyShapes: ['torpedo'],
+                patterns: ['solid'],
                 baseColor: '#4CAF50',
                 baseSize: 20,
-                finStyles: ['normal', 'long'],
-                eyeStyles: ['round', 'large']
-            },
-            'predator': {
-                bodyShapes: ['torpedo', 'disc'],
-                patterns: ['spots', 'solid'],
-                baseColor: '#f44336',
-                baseSize: 35,
-                finStyles: ['sharp', 'normal'],
-                eyeStyles: ['sharp', 'round']
-            },
-            'tropical': {
-                bodyShapes: ['disc', 'elongated'],
-                patterns: ['stripes', 'spots', 'gradient'],
-                baseColor: '#FF9800',
-                baseSize: 25,
-                finStyles: ['colorful', 'long'],
-                eyeStyles: ['large', 'round']
+                finStyles: ['normal'],
+                eyeStyles: ['round']
             }
         };
         
@@ -121,6 +178,24 @@ class FishAppearanceSystem {
             // Generate appearance if not already done
             const seed = fish.id ? fish.id.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : Math.random() * 1000;
             fish.appearance = this.generateFishAppearance(fish.species, seed);
+        }
+
+        // Update fish direction to match velocity for proper alignment
+        if (fish.velocity && (fish.velocity.x !== 0 || fish.velocity.y !== 0)) {
+            const targetDirection = Math.atan2(fish.velocity.y, fish.velocity.x);
+            
+            // Smooth rotation - interpolate between current and target direction
+            if (fish.direction !== undefined) {
+                let angleDiff = targetDirection - fish.direction;
+                // Normalize angle difference to [-PI, PI]
+                while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
+                while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+                
+                // Smoothly rotate (adjust 0.15 for rotation speed)
+                fish.direction += angleDiff * 0.15;
+            } else {
+                fish.direction = targetDirection;
+            }
         }
 
         // Update fish animations before rendering
@@ -197,6 +272,217 @@ class FishAppearanceSystem {
         ctx.ellipse(0, 0, fish.size * 1.2, fish.size * 0.5, 0, 0, 2 * Math.PI);
         ctx.fillStyle = fish.appearance.primaryColor;
         ctx.fill();
+    }
+
+    // Species-specific body shapes with realistic characteristics
+    
+    drawClownfishBody(ctx, fish) {
+        // Rounded, compact oval body - characteristic of clownfish
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.9, fish.size * 0.65, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+        
+        // Add distinctive white stripes (drawn on body)
+        ctx.fillStyle = '#FFFFFF';
+        // Head stripe
+        ctx.fillRect(fish.size * 0.3, -fish.size * 0.65, fish.size * 0.25, fish.size * 1.3);
+        // Middle stripe
+        ctx.fillRect(-fish.size * 0.1, -fish.size * 0.65, fish.size * 0.2, fish.size * 1.3);
+        // Tail stripe
+        ctx.fillRect(-fish.size * 0.6, -fish.size * 0.65, fish.size * 0.15, fish.size * 1.3);
+    }
+
+    drawTangBody(ctx, fish) {
+        // Oval, laterally compressed - typical of surgeonfish/tangs
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.85, fish.size * 0.95, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+        
+        // Add characteristic tail scalpel (surgeonfish feature)
+        ctx.fillStyle = this.darkenColor(fish.appearance.primaryColor, 0.4);
+        ctx.beginPath();
+        ctx.moveTo(-fish.size * 0.75, fish.size * 0.3);
+        ctx.lineTo(-fish.size * 0.85, fish.size * 0.35);
+        ctx.lineTo(-fish.size * 0.75, fish.size * 0.4);
+        ctx.fill();
+    }
+
+    drawButterflyfishBody(ctx, fish) {
+        // Tall, thin disc - characteristic tall body of butterflyfish
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.7, fish.size, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+        
+        // Add eye spot (false eye pattern common in butterflyfish)
+        ctx.fillStyle = '#000000';
+        ctx.beginPath();
+        ctx.arc(-fish.size * 0.5, -fish.size * 0.6, fish.size * 0.15, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.fillStyle = '#FFFFFF';
+        ctx.beginPath();
+        ctx.arc(-fish.size * 0.5, -fish.size * 0.6, fish.size * 0.08, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+    drawAngelfishBody(ctx, fish) {
+        // Triangular, elegant - characteristic angelfish shape
+        ctx.beginPath();
+        // Create a more triangular, tall body
+        ctx.moveTo(fish.size * 0.6, 0);
+        // Top curve
+        ctx.bezierCurveTo(
+            fish.size * 0.4, -fish.size * 0.8,
+            -fish.size * 0.2, -fish.size * 1.1,
+            -fish.size * 0.7, -fish.size * 0.4
+        );
+        // Back
+        ctx.lineTo(-fish.size * 0.8, 0);
+        // Bottom curve
+        ctx.bezierCurveTo(
+            -fish.size * 0.2, fish.size * 1.1,
+            fish.size * 0.4, fish.size * 0.8,
+            fish.size * 0.6, 0
+        );
+        ctx.closePath();
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+    }
+
+    drawBarracudaBody(ctx, fish) {
+        // Long, sleek, torpedo shape - built for speed
+        ctx.beginPath();
+        // Elongated streamlined body
+        ctx.ellipse(0, 0, fish.size * 1.4, fish.size * 0.35, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+        
+        // Add characteristic pointed snout
+        ctx.beginPath();
+        ctx.moveTo(fish.size * 1.4, 0);
+        ctx.lineTo(fish.size * 1.7, fish.size * 0.1);
+        ctx.lineTo(fish.size * 1.7, -fish.size * 0.1);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Add darker back stripe (common in barracudas)
+        ctx.fillStyle = this.darkenColor(fish.appearance.primaryColor, 0.3);
+        ctx.beginPath();
+        ctx.ellipse(0, -fish.size * 0.25, fish.size * 1.3, fish.size * 0.12, 0, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+
+    drawSharkBody(ctx, fish) {
+        // Classic shark silhouette - streamlined with distinctive shape
+        ctx.beginPath();
+        // Main body
+        ctx.moveTo(fish.size * 1.2, 0);
+        // Top curve with dorsal hump
+        ctx.bezierCurveTo(
+            fish.size * 0.8, -fish.size * 0.45,
+            fish.size * 0.2, -fish.size * 0.5,
+            -fish.size * 0.8, -fish.size * 0.3
+        );
+        // Tail top
+        ctx.lineTo(-fish.size * 1.3, -fish.size * 0.6);
+        ctx.lineTo(-fish.size * 1.1, -fish.size * 0.15);
+        // Tail bottom
+        ctx.lineTo(-fish.size * 1.2, fish.size * 0.2);
+        ctx.lineTo(-fish.size * 0.8, fish.size * 0.25);
+        // Bottom curve
+        ctx.bezierCurveTo(
+            fish.size * 0.2, fish.size * 0.4,
+            fish.size * 0.8, fish.size * 0.35,
+            fish.size * 1.2, 0
+        );
+        ctx.closePath();
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+        
+        // Add gills
+        ctx.strokeStyle = this.darkenColor(fish.appearance.primaryColor, 0.3);
+        ctx.lineWidth = 2;
+        for (let i = 0; i < 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(fish.size * 0.3 - i * fish.size * 0.15, -fish.size * 0.35);
+            ctx.lineTo(fish.size * 0.25 - i * fish.size * 0.15, fish.size * 0.3);
+            ctx.stroke();
+        }
+    }
+
+    drawLionfishBody(ctx, fish) {
+        // Compact body with elaborate spiny fins
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.8, fish.size * 0.7, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+        
+        // Add characteristic red/white stripes
+        ctx.strokeStyle = '#FFFFFF';
+        ctx.lineWidth = fish.size * 0.08;
+        for (let i = -3; i <= 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(fish.size * 0.6, i * fish.size * 0.2);
+            ctx.lineTo(-fish.size * 0.6, i * fish.size * 0.2);
+            ctx.stroke();
+        }
+        
+        // Venomous spines will be drawn as part of fins
+    }
+
+    drawCommunistFishBody(ctx, fish) {
+        // Strong, sturdy worker's body with revolutionary characteristics
+        ctx.beginPath();
+        // Robust oval shape
+        ctx.ellipse(0, 0, fish.size * 0.95, fish.size * 0.7, 0, 0, 2 * Math.PI);
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.fill();
+        
+        // Add hammer and sickle symbol
+        ctx.save();
+        ctx.fillStyle = '#FFD700'; // Gold color for symbol
+        ctx.translate(fish.size * 0.1, 0);
+        ctx.scale(fish.size * 0.015, fish.size * 0.015);
+        
+        // Draw simplified hammer
+        ctx.fillRect(-8, -15, 4, 20);
+        ctx.fillRect(-15, -15, 18, 5);
+        
+        // Draw simplified sickle
+        ctx.beginPath();
+        ctx.arc(5, 0, 12, Math.PI * 0.5, Math.PI * 1.8);
+        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#FFD700';
+        ctx.stroke();
+        
+        ctx.restore();
+        
+        // Add red star on forehead
+        ctx.fillStyle = '#FFD700';
+        this.drawStar(ctx, fish.size * 0.5, -fish.size * 0.3, fish.size * 0.2, 5);
+    }
+
+    // Helper method to draw a star
+    drawStar(ctx, cx, cy, radius, points) {
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.beginPath();
+        for (let i = 0; i < points * 2; i++) {
+            const angle = (i * Math.PI) / points;
+            const r = i % 2 === 0 ? radius : radius * 0.5;
+            const x = Math.cos(angle - Math.PI / 2) * r;
+            const y = Math.sin(angle - Math.PI / 2) * r;
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
     }
 
     // Pattern methods
@@ -284,20 +570,32 @@ class FishAppearanceSystem {
 
     drawEnhancedAnimatedFins(ctx, fish) {
         const tailMovement = this.animator.calculateTailMovement(fish, Date.now() * 0.001);
+        const species = fish.species;
         
         ctx.fillStyle = fish.appearance.secondaryColor;
         
-        // Enhanced tail fin with multi-segment movement
-        this.drawEnhancedTailFin(ctx, fish, tailMovement);
-        
-        // Pectoral fins with rowing motion
-        this.drawPectoralFins(ctx, fish);
-        
-        // Dorsal fin with stabilizing movement
-        this.drawDorsalFin(ctx, fish);
-        
-        // Anal fin for stability
-        this.drawAnalFin(ctx, fish);
+        // Draw species-specific fins based on fish type
+        switch(species) {
+            case 'Peixe-leão':
+                this.drawLionfishFins(ctx, fish, tailMovement);
+                break;
+            case 'Tubarão-recife':
+                this.drawSharkFins(ctx, fish, tailMovement);
+                break;
+            case 'Barracuda':
+                this.drawBarracudaFins(ctx, fish, tailMovement);
+                break;
+            case 'Peixe-anjo':
+                this.drawAngelfishFins(ctx, fish, tailMovement);
+                break;
+            default:
+                // Standard fins for most species
+                this.drawEnhancedTailFin(ctx, fish, tailMovement);
+                this.drawPectoralFins(ctx, fish);
+                this.drawDorsalFin(ctx, fish);
+                this.drawAnalFin(ctx, fish);
+                break;
+        }
     }
 
     drawEnhancedTailFin(ctx, fish, tailMovement) {
@@ -395,6 +693,167 @@ class FishAppearanceSystem {
         ctx.lineTo(0, fish.size * 0.5);
         ctx.closePath();
         ctx.fill();
+    }
+
+    // Species-specific fin drawing methods
+    
+    drawLionfishFins(ctx, fish, tailMovement) {
+        // Lionfish has elaborate, venomous spines
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        ctx.strokeStyle = fish.appearance.primaryColor;
+        ctx.lineWidth = 2;
+        
+        // Dorsal spines - very elaborate
+        const spineCount = 13;
+        for (let i = 0; i < spineCount; i++) {
+            const x = fish.size * 0.6 - (i / spineCount) * fish.size * 1.2;
+            const length = fish.size * (0.8 + Math.sin(i * 0.5) * 0.3);
+            
+            ctx.save();
+            ctx.translate(x, -fish.size * 0.5);
+            ctx.rotate(-Math.PI * 0.3 + i * 0.1);
+            
+            // Draw spine with membrane
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-length * 0.3, -length);
+            ctx.lineTo(length * 0.3, -length);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+            
+            ctx.restore();
+        }
+        
+        // Pectoral fins - fan-like
+        ctx.save();
+        ctx.translate(fish.size * 0.3, 0);
+        for (let i = -3; i <= 3; i++) {
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-fish.size * 0.4, i * fish.size * 0.15);
+            ctx.strokeStyle = fish.appearance.secondaryColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+        ctx.restore();
+        
+        // Simple tail
+        this.drawEnhancedTailFin(ctx, fish, tailMovement);
+    }
+
+    drawSharkFins(ctx, fish, tailMovement) {
+        // Dorsal fin - iconic triangular shark fin
+        ctx.fillStyle = fish.appearance.primaryColor;
+        ctx.beginPath();
+        ctx.moveTo(fish.size * 0.2, -fish.size * 0.5);
+        ctx.lineTo(fish.size * 0.4, -fish.size * 1.1);
+        ctx.lineTo(fish.size * 0.6, -fish.size * 0.5);
+        ctx.bezierCurveTo(
+            fish.size * 0.5, -fish.size * 0.6,
+            fish.size * 0.3, -fish.size * 0.6,
+            fish.size * 0.2, -fish.size * 0.5
+        );
+        ctx.closePath();
+        ctx.fill();
+        
+        // Pectoral fins - wide and wing-like
+        ctx.save();
+        ctx.translate(fish.size * 0.4, fish.size * 0.35);
+        ctx.rotate(Math.PI * 0.3);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.4, fish.size * 0.15, 0, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+        
+        // Tail is already part of the body shape
+    }
+
+    drawBarracudaFins(ctx, fish, tailMovement) {
+        // Small, efficient fins for a speed predator
+        
+        // Two small dorsal fins
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        
+        // First dorsal
+        ctx.beginPath();
+        ctx.moveTo(fish.size * 0.3, -fish.size * 0.35);
+        ctx.lineTo(fish.size * 0.4, -fish.size * 0.6);
+        ctx.lineTo(fish.size * 0.5, -fish.size * 0.35);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Second dorsal
+        ctx.beginPath();
+        ctx.moveTo(-fish.size * 0.3, -fish.size * 0.3);
+        ctx.lineTo(-fish.size * 0.2, -fish.size * 0.5);
+        ctx.lineTo(-fish.size * 0.1, -fish.size * 0.3);
+        ctx.closePath();
+        ctx.fill();
+        
+        // Forked tail for speed
+        const motionDamping = (fish.fatigueMotionDamping || 1) * (fish.hideMotionDamping || 1);
+        const baseOffset = tailMovement.base * motionDamping;
+        
+        ctx.save();
+        ctx.translate(-fish.size * 1.4, baseOffset);
+        
+        ctx.beginPath();
+        // Upper fork
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-fish.size * 0.35, -fish.size * 0.45);
+        ctx.lineTo(-fish.size * 0.3, -fish.size * 0.3);
+        // Lower fork
+        ctx.lineTo(-fish.size * 0.3, fish.size * 0.3);
+        ctx.lineTo(-fish.size * 0.35, fish.size * 0.45);
+        ctx.lineTo(0, 0);
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+        
+        // Small pectoral fins
+        ctx.save();
+        ctx.translate(fish.size * 0.5, fish.size * 0.25);
+        ctx.beginPath();
+        ctx.ellipse(0, 0, fish.size * 0.15, fish.size * 0.08, Math.PI * 0.4, 0, 2 * Math.PI);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    drawAngelfishFins(ctx, fish, tailMovement) {
+        // Flowing, elegant fins
+        ctx.fillStyle = fish.appearance.secondaryColor;
+        
+        // The dorsal and anal fins are integrated into the body shape
+        // Just add the tail
+        const motionDamping = (fish.fatigueMotionDamping || 1) * (fish.hideMotionDamping || 1);
+        const baseOffset = tailMovement.base * motionDamping;
+        
+        ctx.save();
+        ctx.translate(-fish.size * 0.7, baseOffset);
+        
+        // Flowing tail fin
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.bezierCurveTo(
+            -fish.size * 0.2, -fish.size * 0.4,
+            -fish.size * 0.3, -fish.size * 0.5,
+            -fish.size * 0.3, -fish.size * 0.3
+        );
+        ctx.lineTo(-fish.size * 0.3, fish.size * 0.3);
+        ctx.bezierCurveTo(
+            -fish.size * 0.3, fish.size * 0.5,
+            -fish.size * 0.2, fish.size * 0.4,
+            0, 0
+        );
+        ctx.closePath();
+        ctx.fill();
+        
+        ctx.restore();
+        
+        // Delicate pectoral fins
+        this.drawPectoralFins(ctx, fish);
     }
 
     drawExpressiveEyes(ctx, fish) {
