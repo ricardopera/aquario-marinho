@@ -5,10 +5,12 @@ class Schooling extends Behavior {
     constructor(entity) {
         super(entity);
         this.neighbors = [];
-        this.separationWeight = 1.5;
-        this.alignmentWeight = 1.0;
-        this.cohesionWeight = 1.0;
-        this.neighborRadius = entity.size * 8;
+        // Ajusta pesos baseado na tendência de cardume da espécie
+        const tendency = entity.schoolingTendency || 0.5;
+        this.separationWeight = 1.5 * tendency;
+        this.alignmentWeight = 1.0 * tendency;
+        this.cohesionWeight = 1.0 * tendency;
+        this.neighborRadius = entity.size * 8 * (0.5 + tendency); // Raio maior para espécies mais sociais
         
         this.thoughts = [
             "Nadando com meus amigos!",

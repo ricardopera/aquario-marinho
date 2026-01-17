@@ -44,15 +44,107 @@ const HIDEOUT_COUNT = 3;
 const ALGAE_COUNT = 20;
 const BUBBLE_RATE = 0.1;
 
-// Espécies de peixes disponíveis
+// Espécies de peixes disponíveis com características realistas
 const FISH_SPECIES = [
-    { name: "Peixe-palhaço", color: "#FF7F00", predator: false, minSize: 15, maxSize: 25 },
-    { name: "Cirurgião-azul", color: "#1E90FF", predator: false, minSize: 20, maxSize: 30 },
-    { name: "Peixe-borboleta", color: "#FFD700", predator: false, minSize: 15, maxSize: 25 },
-    { name: "Peixe-anjo", color: "#9370DB", predator: false, minSize: 20, maxSize: 35 },
-    { name: "Barracuda", color: "#708090", predator: true, minSize: 30, maxSize: 45 },
-    { name: "Tubarão-recife", color: "#A9A9A9", predator: true, minSize: 40, maxSize: 60 },
-    { name: "Peixe-leão", color: "#B22222", predator: true, minSize: 25, maxSize: 40 }
+    { 
+        name: "Peixe-palhaço", 
+        color: "#FF7F00", 
+        predator: false, 
+        minSize: 15, 
+        maxSize: 25,
+        // Características baseadas no comportamento real
+        depthPreference: 0.7, // 0-1, onde 1 = superfície, 0 = fundo (vive em anêmonas no meio-fundo)
+        schoolingTendency: 0.3, // 0-1, baixa tendência a cardumes (vive em pares/pequenos grupos)
+        territorialLevel: 0.7, // 0-1, muito territorial com sua anêmona
+        activityLevel: 0.6, // 0-1, moderadamente ativo
+        cruisingSpeed: 0.8, // Multiplicador de velocidade normal
+        burstSpeed: 1.5, // Multiplicador para velocidade máxima
+        shyness: 0.4 // 0-1, não muito tímido
+    },
+    { 
+        name: "Cirurgião-azul", 
+        color: "#1E90FF", 
+        predator: false, 
+        minSize: 20, 
+        maxSize: 30,
+        depthPreference: 0.5, // Habita recifes em profundidade média
+        schoolingTendency: 0.8, // Alta tendência a formar cardumes
+        territorialLevel: 0.3, // Baixa territorialidade quando jovem
+        activityLevel: 0.8, // Muito ativo, nada constantemente
+        cruisingSpeed: 1.2,
+        burstSpeed: 2.0, // Muito rápido em explosões
+        shyness: 0.5
+    },
+    { 
+        name: "Peixe-borboleta", 
+        color: "#FFD700", 
+        predator: false, 
+        minSize: 15, 
+        maxSize: 25,
+        depthPreference: 0.6, // Prefere águas rasas e recifes
+        schoolingTendency: 0.2, // Vive em pares ou sozinho
+        territorialLevel: 0.5,
+        activityLevel: 0.7, // Ativo durante o dia
+        cruisingSpeed: 0.9,
+        burstSpeed: 1.4,
+        shyness: 0.6 // Relativamente tímido
+    },
+    { 
+        name: "Peixe-anjo", 
+        color: "#9370DB", 
+        predator: false, 
+        minSize: 20, 
+        maxSize: 35,
+        depthPreference: 0.55, // Recifes de profundidade média
+        schoolingTendency: 0.1, // Solitário ou em pares
+        territorialLevel: 0.8, // Muito territorial
+        activityLevel: 0.5, // Moderado, elegante
+        cruisingSpeed: 0.7, // Nada lentamente com elegância
+        burstSpeed: 1.3,
+        shyness: 0.3 // Menos tímido, curioso
+    },
+    { 
+        name: "Barracuda", 
+        color: "#708090", 
+        predator: true, 
+        minSize: 30, 
+        maxSize: 45,
+        depthPreference: 0.4, // Águas abertas, profundidade variável
+        schoolingTendency: 0.4, // Jovens formam cardumes, adultos mais solitários
+        territorialLevel: 0.5,
+        activityLevel: 0.7, // Caçador ativo
+        cruisingSpeed: 1.3, // Rápido mesmo em cruzeiro
+        burstSpeed: 2.5, // Explosões extremamente rápidas para caçar
+        shyness: 0.2 // Confiante, não foge facilmente
+    },
+    { 
+        name: "Tubarão-recife", 
+        color: "#A9A9A9", 
+        predator: true, 
+        minSize: 40, 
+        maxSize: 60,
+        depthPreference: 0.3, // Patrulha o fundo e meio do recife
+        schoolingTendency: 0.0, // Solitário
+        territorialLevel: 0.9, // Extremamente territorial
+        activityLevel: 0.6, // Patrulha constante
+        cruisingSpeed: 1.0, // Velocidade constante
+        burstSpeed: 2.2, // Rápido quando necessário
+        shyness: 0.1 // Apex predator, não é tímido
+    },
+    { 
+        name: "Peixe-leão", 
+        color: "#B22222", 
+        predator: true, 
+        minSize: 25, 
+        maxSize: 40,
+        depthPreference: 0.65, // Prefere áreas rochosas e recifes rasos
+        schoolingTendency: 0.1, // Solitário
+        territorialLevel: 0.8, // Territorial
+        activityLevel: 0.4, // Caçador de emboscada, não muito ativo
+        cruisingSpeed: 0.6, // Lento e deliberado
+        burstSpeed: 1.8, // Ataque rápido quando necessário
+        shyness: 0.2 // Confiante devido às espinhas venenosas
+    }
 ];
 
 // Função principal de inicialização
@@ -146,7 +238,7 @@ function initializeEntities() {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
         const size = species.minSize + Math.random() * (species.maxSize - species.minSize);
-        fishes.push(new Fish(x, y, size, species.name, species.color, species.predator));
+        fishes.push(new Fish(x, y, size, species));
     }
     
     // Adiciona o peixe comunista permanentemente
@@ -182,7 +274,7 @@ function setupControls() {
             const x = Math.random() * canvas.width;
             const y = Math.random() * canvas.height;
             const size = species.minSize + Math.random() * (species.maxSize - species.minSize);
-            fishes.push(new Fish(x, y, size, species.name, species.color, species.predator));
+            fishes.push(new Fish(x, y, size, species));
         });
     }
     
@@ -592,9 +684,7 @@ window.aquariumAPI = {
             x || Math.random() * canvas.width,
             y || Math.random() * canvas.height,
             size,
-            speciesInfo.name,
-            speciesInfo.color,
-            speciesInfo.predator
+            speciesInfo
         );
         
         fishes.push(fish);
