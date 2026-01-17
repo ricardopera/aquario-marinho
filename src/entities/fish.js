@@ -203,8 +203,8 @@ class Fish extends Entity {
         if (window.advancedParticles && this.velocity) {
             const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
             if (speed > this.maxSpeed * 0.6) {
-                // Intensity based on speed
-                const intensity = speed / this.burstSpeed;
+                // Intensity based on speed, clamped to [0, 1]
+                const intensity = Math.min(1.0, speed / this.burstSpeed);
                 window.advancedParticles.createBubbleTrail(
                     { x: this.position.x, y: this.position.y },
                     this.velocity,
@@ -216,7 +216,7 @@ class Fish extends Entity {
         // FASE 2: Criar sedimento quando nadando perto do fundo
         if (window.advancedParticles && this.position.y > window.innerHeight - 100) {
             if (Math.random() < 0.05) { // 5% chance per frame when near bottom
-                const disturbance = Math.sqrt(this.velocity?.x * this.velocity?.x + this.velocity?.y * this.velocity?.y) / this.burstSpeed;
+                const disturbance = Math.min(1.0, Math.sqrt(this.velocity?.x * this.velocity?.x + this.velocity?.y * this.velocity?.y) / this.burstSpeed);
                 window.advancedParticles.createSedimentCloud(
                     { x: this.position.x, y: this.position.y + this.size },
                     disturbance
