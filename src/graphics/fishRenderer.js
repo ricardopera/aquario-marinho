@@ -187,9 +187,8 @@ class FishAppearanceSystem {
             // Smooth rotation - interpolate between current and target direction
             if (fish.direction !== undefined) {
                 let angleDiff = targetDirection - fish.direction;
-                // Normalize angle difference to [-PI, PI]
-                while (angleDiff > Math.PI) angleDiff -= 2 * Math.PI;
-                while (angleDiff < -Math.PI) angleDiff += 2 * Math.PI;
+                // Normalize angle difference to [-PI, PI] using modulo arithmetic
+                angleDiff = ((angleDiff + Math.PI) % (2 * Math.PI)) - Math.PI;
                 
                 // Smoothly rotate (adjust 0.15 for rotation speed)
                 fish.direction += angleDiff * 0.15;
