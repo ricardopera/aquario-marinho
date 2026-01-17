@@ -23,9 +23,6 @@ export class CommunistFish extends Fish {
         // Corrigindo os parâmetros para seguir a ordem esperada pelo construtor de Fish
         super(x, y, size, communistSpeciesData);
         
-        // Velocidade normal, como outros peixes
-        this.maxSpeed = 1.3;
-        
         // Pensamentos comunistas
         this.communistThoughts = [
             "Trabalhadores do mundo, uni-vos!",
