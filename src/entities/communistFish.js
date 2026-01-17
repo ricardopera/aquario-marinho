@@ -3,14 +3,25 @@ import Fish from './fish.js';
 
 export class CommunistFish extends Fish {
     constructor(x, y, size = 30) {
+        // Create a species data object for the communist fish
+        const communistSpeciesData = {
+            name: "Peixe Comunista",
+            color: '#FF0000', // Vermelho soviético
+            predator: false,
+            minSize: 28,
+            maxSize: 32,
+            // Características específicas do peixe comunista
+            depthPreference: 0.5, // Nada em todas as profundidades (igualitário)
+            schoolingTendency: 0.9, // Alta tendência coletivista
+            territorialLevel: 0.1, // Baixa territorialidade (propriedade é roubo!)
+            activityLevel: 0.7, // Ativo na revolução
+            cruisingSpeed: 1.0,
+            burstSpeed: 1.5,
+            shyness: 0.2 // Corajoso na luta de classes
+        };
+        
         // Corrigindo os parâmetros para seguir a ordem esperada pelo construtor de Fish
-        super(x, y, size, "Peixe Comunista", '#FF0000', false);
-        
-        // Configurar aparência do peixe comunista (apenas cor vermelha)
-        this.color = '#FF0000'; // Vermelho soviético
-        
-        // Velocidade normal, como outros peixes
-        this.maxSpeed = 1.3;
+        super(x, y, size, communistSpeciesData);
         
         // Pensamentos comunistas
         this.communistThoughts = [

@@ -8,7 +8,9 @@ class Wander extends Behavior {
         this.wanderAngle = Math.random() * Math.PI * 2;
         this.wanderRadius = 10;
         this.wanderDistance = 60;
-        this.wanderJitter = 0.5;
+        // Ajusta a oscilação baseada no nível de atividade da espécie
+        const activityLevel = entity.activityLevel || 0.5;
+        this.wanderJitter = 0.5 * activityLevel; // Peixes mais ativos mudam de direção com mais frequência
         
         this.thoughts = [
             "Estou tão entediado, vou nadar por aí!",

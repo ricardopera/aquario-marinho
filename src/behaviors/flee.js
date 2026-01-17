@@ -5,8 +5,10 @@ class Flee extends Behavior {
     constructor(entity) {
         super(entity);
         this.threats = [];
-        this.fearRadius = entity.size * 7;
-        this.maxForce = 0.15; // Reduzido de 0.2 para 0.15
+        // Ajusta o raio de medo baseado na timidez da espécie
+        const shynessMultiplier = 0.7 + (entity.shyness || 0.5) * 0.6; // 0.7 a 1.3x
+        this.fearRadius = entity.size * 7 * shynessMultiplier;
+        this.maxForce = 0.15 * (0.8 + (entity.shyness || 0.5) * 0.4); // Peixes mais tímidos fogem com mais força
         
         this.thoughts = [
             "Socorro! Um predador!",

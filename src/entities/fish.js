@@ -10,14 +10,29 @@ import { createThoughtBubble } from '../utils/thoughtBubble.js';
 // Removida a importação circular para CommunistFish ou createCommunistFish
 
 class Fish extends Entity {
-    constructor(x, y, size, species, color, isPredator = false) {
+    constructor(x, y, size, speciesData) {
         super(x, y, size);
         this.id = Math.random().toString(36).substr(2, 9); // Add unique ID for each fish
-        this.species = species;
-        this.color = color;
-        this.isPredator = isPredator;
-        // Reduzindo a velocidade máxima dos peixes
-        this.maxSpeed = isPredator ? 2 : 1.3; // Reduzido de 3/2 para 2/1.3
+        
+        // Store full species data
+        this.speciesData = speciesData;
+        this.species = speciesData.name;
+        this.color = speciesData.color;
+        this.isPredator = speciesData.predator;
+        
+        // Apply species-specific characteristics
+        this.depthPreference = speciesData.depthPreference || 0.5;
+        this.schoolingTendency = speciesData.schoolingTendency || 0.5;
+        this.territorialLevel = speciesData.territorialLevel || 0.5;
+        this.activityLevel = speciesData.activityLevel || 0.5;
+        this.shyness = speciesData.shyness || 0.5;
+        
+        // Calculate speeds based on species characteristics
+        const baseSpeed = speciesData.predator ? 2 : 1.3;
+        this.maxSpeed = baseSpeed * (speciesData.cruisingSpeed || 1.0);
+        this.burstSpeed = baseSpeed * (speciesData.burstSpeed || 1.5);
+        this.currentSpeed = this.maxSpeed;
+        
         this.perceptionRadius = size * 5;
         this.hunger = 0;
         this.energy = 100;
@@ -25,9 +40,14 @@ class Fish extends Entity {
         this.hiding = false;
         this.currentHideout = null;
         
-        // Variáveis para animação - reduzindo a frequência do movimento da cauda
+        // Preferred depth based on species (will influence wandering)
+        // Use window dimensions if available, otherwise default
+        const canvasHeight = (typeof window !== 'undefined' && window.innerHeight) ? window.innerHeight : 600;
+        this.preferredDepth = this.depthPreference * canvasHeight;
+        
+        // Variáveis para animação - ajustadas por espécie
         this.tailAmplitude = 0.3;
-        this.tailFrequency = 0.15; // Reduzido de 0.2 para 0.15
+        this.tailFrequency = 0.15 * (speciesData.activityLevel || 0.5);
         this.tailPhase = Math.random() * Math.PI * 2;
         
         // Comportamentos
@@ -108,9 +128,14 @@ class Fish extends Entity {
         // Determina comportamento com base no estado atual
         let force = { x: 0, y: 0 };
         
+        // Ajusta velocidade baseada em energia e estado comportamental
+        this.currentSpeed = this.maxSpeed * (0.5 + (this.energy / 200));
+        
         // Decide qual comportamento utilizar
         if (this.hunger > 70) {
             // Buscar comida tem prioridade alta se estiver com fome
+            // Usa burst speed quando caçando
+            this.currentSpeed = this.burstSpeed;
             force = addVectors(force, this.behaviors.seekFood.update(foodTargets));
         } else {
             // Verifica ameaças
@@ -118,22 +143,37 @@ class Fish extends Entity {
             
             if (this.behaviors.flee.isAfraidOfSomething()) {
                 // Se detectou ameaças, decide entre fugir ou se esconder
+                // Peixes mais tímidos fogem mais rapidamente
+                if (this.shyness > 0.5) {
+                    this.currentSpeed = this.burstSpeed; // Fuga em velocidade máxima
+                }
                 force = addVectors(force, fleeForce);
                 
-                // Chance de procurar esconderijo
-                if (Math.random() < 0.3 && hideouts.length > 0) {
+                // Chance de procurar esconderijo baseada em timidez
+                if (Math.random() < this.shyness && hideouts.length > 0) {
                     const hideForce = this.behaviors.hide.update(hideouts, true);
                     force = addVectors(force, hideForce);
                 }
             } else {
-                // Comportamento de cardume para peixes da mesma espécie
-                const schoolForce = this.behaviors.school.update(fishes);
-                force = addVectors(force, schoolForce);
+                // Reset para velocidade de cruzeiro
+                this.currentSpeed = this.maxSpeed;
                 
-                // Se não está em cardume ou com chances aleatórias, vagueia
+                // Comportamento de cardume para peixes da mesma espécie
+                // Ajustado pela tendência de cardume da espécie
+                if (this.schoolingTendency > 0.3) {
+                    const schoolForce = this.behaviors.school.update(fishes);
+                    const schoolWeight = this.schoolingTendency;
+                    force = addVectors(force, multiplyVector(schoolForce, schoolWeight));
+                }
+                
+                // Vagueia se não está em cardume ou com chances aleatórias
                 if (!this.behaviors.school.hasNeighbors() || Math.random() < 0.3) {
                     const wanderForce = this.behaviors.wander.calculate();
                     force = addVectors(force, wanderForce);
+                    
+                    // Adiciona força para manter na profundidade preferida
+                    const depthForce = this.calculateDepthPreferenceForce();
+                    force = addVectors(force, depthForce);
                 }
                 
                 // Chance de deixar um esconderijo se estiver escondido
@@ -146,8 +186,15 @@ class Fish extends Entity {
         // Chance de pensamento baseado no comportamento atual
         this.checkBehaviorThoughts();
         
-        // Aplica a força resultante
+        // Aplica a força resultante com velocidade ajustada
         this.applyForce(force);
+        
+        // Limita a velocidade baseada no estado atual
+        const currentVelocityMag = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
+        if (currentVelocityMag > this.currentSpeed) {
+            const normalized = normalize(this.velocity);
+            this.velocity = multiplyVector(normalized, this.currentSpeed);
+        }
         
         // Atualiza a posição com física
         super.update();
@@ -156,8 +203,8 @@ class Fish extends Entity {
         if (window.advancedParticles && this.velocity) {
             const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.y * this.velocity.y);
             if (speed > this.maxSpeed * 0.6) {
-                // Intensity based on speed
-                const intensity = speed / this.maxSpeed;
+                // Intensity based on speed, clamped to [0, 1]
+                const intensity = Math.min(1.0, speed / this.burstSpeed);
                 window.advancedParticles.createBubbleTrail(
                     { x: this.position.x, y: this.position.y },
                     this.velocity,
@@ -169,13 +216,26 @@ class Fish extends Entity {
         // FASE 2: Criar sedimento quando nadando perto do fundo
         if (window.advancedParticles && this.position.y > window.innerHeight - 100) {
             if (Math.random() < 0.05) { // 5% chance per frame when near bottom
-                const disturbance = Math.sqrt(this.velocity?.x * this.velocity?.x + this.velocity?.y * this.velocity?.y) / this.maxSpeed;
+                const disturbance = Math.min(1.0, Math.sqrt(this.velocity?.x * this.velocity?.x + this.velocity?.y * this.velocity?.y) / this.burstSpeed);
                 window.advancedParticles.createSedimentCloud(
                     { x: this.position.x, y: this.position.y + this.size },
                     disturbance
                 );
             }
         }
+    }
+    
+    calculateDepthPreferenceForce() {
+        // Calcula força para manter o peixe na profundidade preferida
+        const currentDepth = this.position.y;
+        const depthDifference = this.preferredDepth - currentDepth;
+        
+        // Retorna força vertical suave
+        const strength = 0.02; // Força suave para não sobrepor outros comportamentos
+        return {
+            x: 0,
+            y: depthDifference * strength
+        };
     }
     
     checkBehaviorThoughts() {
