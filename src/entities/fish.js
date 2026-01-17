@@ -28,7 +28,7 @@ class Fish extends Entity {
         this.shyness = speciesData.shyness || 0.5;
         
         // Calculate speeds based on species characteristics
-        const baseSpeed = speciesData.isPredator ? 2 : 1.3;
+        const baseSpeed = speciesData.predator ? 2 : 1.3;
         this.maxSpeed = baseSpeed * (speciesData.cruisingSpeed || 1.0);
         this.burstSpeed = baseSpeed * (speciesData.burstSpeed || 1.5);
         this.currentSpeed = this.maxSpeed;
